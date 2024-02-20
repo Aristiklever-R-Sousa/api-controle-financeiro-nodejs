@@ -2,10 +2,11 @@ import crypto from 'node:crypto'
 import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
-import { request } from 'node:http'
 import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 
 export async function transactionRoutes(app: FastifyInstance) {
+  app.addHook('preHandler', checkSessionIdExists)
+
   app.get('/', { preHandler: [checkSessionIdExists] }, async (request) => {
     const { sessionId } = request.cookies
 
