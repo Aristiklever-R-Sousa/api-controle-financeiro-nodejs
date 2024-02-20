@@ -5,9 +5,21 @@ import { z } from 'zod'
 
 export async function transactionRoutes(app: FastifyInstance) {
   app.get('/', async () => {
-    const transaction = await knex('transactions').select('*')
+    const transactions = await knex('transactions').select()
 
-    return transaction
+    return { transactions }
+  })
+
+  app.get('/:id', async (request) => {
+    const getTransactionParamsSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const { id } = getTransactionParamsSchema.parse(request.params)
+
+    const transaction = await knex('transactions').where('id', id).first()
+
+    return { transaction }
   })
 
   app.post('/', async (request, reply) => {
@@ -20,7 +32,7 @@ export async function transactionRoutes(app: FastifyInstance) {
       request.body,
     )
 
-    await knex('transactions').insert({
+    await knex('transaction').insert({
       id: crypto.randomUUID(),
       title,
       amount: type === 'credit' ? amount : amount * -1,
